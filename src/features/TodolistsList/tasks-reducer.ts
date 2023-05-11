@@ -3,8 +3,55 @@ import {Dispatch} from 'redux'
 import {AppRootStateType} from 'app/store'
 import {appActions, SetAppErrorActionType, SetAppStatusActionType} from 'app/app-reducer'
 import {handleServerAppError, handleServerNetworkError} from 'utils/error-utils'
+import {createSlice, PayloadAction} from "@reduxjs/toolkit";
+import {TodolistDomainType, todolistsActions} from "features/TodolistsList/todolists-reducer";
 
 const initialState: TasksStateType = {}
+
+
+const slice = createSlice({
+    name: 'name',
+    initialState,
+    reducers: {
+        removeTask: (state, action: PayloadAction<{}>) => {
+
+        },
+        addTaskAC: (state, action: PayloadAction<{}>) => {
+
+        },
+        updateTaskAC: (state, action: PayloadAction<{}>) => {
+
+        },
+        setTasksAC: (state, action: PayloadAction<{}>) => {
+
+        },
+    },
+    // если нужен АС из др редюсера то используем extraReducers
+    extraReducers: (builder) => {
+        builder
+            // мы обращаемся к др редюсеру todolistsActions.addTodolist + пишем логику из своего редюсера по ADD-TODOLIST REMOVE-TODOLIST SET-TODOLISTS
+            .addCase(todolistsActions.addTodolist, (state, action) => {
+                // в каждый тудулист добавляем пустой массив тасок
+                state[action.payload.todolist.id] = [];
+                // return {...state, [action.payload.todolist.id]: []}
+            })
+            .addCase(todolistsActions.removeTodolist, (state, action) => {
+                delete state[action.payload.id]
+                // const copyState = {...state}
+                // delete copyState[action.id]
+                // return copyState
+            })
+            .addCase(todolistsActions.setTodolists, (state, action) => {
+                action.payload.todolists.forEach(tl => state[tl.id] = [])
+                // const copyState = {...state}
+                // action.todolists.forEach(tl => {
+                //     copyState[tl.id] = []
+                // })
+                // return copyState
+            })
+    },
+})
+
 
 export const tasksReducer = (state: TasksStateType = initialState, action: ActionsType): TasksStateType => {
     switch (action.type) {
@@ -14,23 +61,9 @@ export const tasksReducer = (state: TasksStateType = initialState, action: Actio
             return {...state, [action.task.todoListId]: [action.task, ...state[action.task.todoListId]]}
         case 'UPDATE-TASK':
             return {
-                ...state,
-                [action.todolistId]: state[action.todolistId]
+                ...state, [action.todolistId]: state[action.todolistId]
                     .map(t => t.id === action.taskId ? {...t, ...action.model} : t)
             }
-        case 'ADD-TODOLIST':
-            return {...state, [action.todolist.id]: []}
-        case 'REMOVE-TODOLIST':
-            const copyState = {...state}K
-            delete copyState[action.id]
-            return copyState
-        case 'SET-TODOLISTS': {
-            const copyState = {...state}
-            action.todolists.forEach(tl => {
-                copyState[tl.id] = []
-            })
-            return copyState
-        }
         case 'SET-TASKS':
             return {...state, [action.todolistId]: action.tasks}
         default:

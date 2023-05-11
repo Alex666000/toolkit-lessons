@@ -12,11 +12,13 @@ const slice = createSlice({
     name: 'todo',
     initialState: todoInitialState,
     reducers: {
+        // остается тут так как мы в tasks-reducer обращаемся к нему из extraReducers
         removeTodolist: (state, action: PayloadAction<{ id: string }>) => {
             const index = state.findIndex(todo => todo.id === action.payload.id)
             if (index !== -1) state.splice(index, 1)
             // return state.filter(tl => tl.id != action.payload.id)
         },
+        // остается тут так как мы в tasks-reducer обращаемся к нему из extraReducers
         addTodolist: (state, action: PayloadAction<{ todolist: TodolistType }>) => {
             const newTodo: TodolistDomainType = {...action.payload.todolist, filter: 'all', entityStatus: 'idle'}
             state.unshift(newTodo)
@@ -44,6 +46,7 @@ const slice = createSlice({
                 todo.entityStatus = action.payload.entityStatus
             }
         },
+        // остается тут так как мы в tasks-reducer обращаемся к нему из extraReducers
         setTodolists: (state, action: PayloadAction<{ todolists: TodolistType[] }>) => {
             // return [{...action.payload.todolist, filter: 'all', entityStatus: 'idle'}, ...state]
             return action.payload.todolists.map((tl) => {
@@ -51,7 +54,9 @@ const slice = createSlice({
             })
         },
     },
-    extraReducers: {},
+    extraReducers: (builder) => {
+
+    },
 })
 
 // actions
