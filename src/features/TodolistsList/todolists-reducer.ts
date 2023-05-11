@@ -4,62 +4,67 @@ import {appActions, RequestStatusType} from 'app/app-reducer'
 import {handleServerNetworkError} from 'utils/error-utils'
 import {AppThunk} from 'app/store';
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
+import {clearTasksAndTodolists} from "common/actions/common.actions";
 
 
-const todoInitialState: Array<TodolistDomainType> = []
+const todoInitialState: TodolistDomainType[] = [];
 
 const slice = createSlice({
     name: 'todo',
     initialState: todoInitialState,
     reducers: {
-        // остается тут так как мы в tasks-reducer обращаемся к нему из extraReducers
         removeTodolist: (state, action: PayloadAction<{ id: string }>) => {
-            const index = state.findIndex(todo => todo.id === action.payload.id)
-            if (index !== -1) state.splice(index, 1)
+            const index = state.findIndex((todo) => todo.id === action.payload.id);
+            if (index !== -1) state.splice(index, 1);
             // return state.filter(tl => tl.id != action.payload.id)
         },
-        // остается тут так как мы в tasks-reducer обращаемся к нему из extraReducers
         addTodolist: (state, action: PayloadAction<{ todolist: TodolistType }>) => {
-            const newTodo: TodolistDomainType = {...action.payload.todolist, filter: 'all', entityStatus: 'idle'}
-            state.unshift(newTodo)
+            const newTodo: TodolistDomainType = {
+                ...action.payload.todolist,
+                filter: 'all',
+                entityStatus: 'idle',
+            };
+            state.unshift(newTodo);
             // return [{...action.payload.todolist, filter: 'all', entityStatus: 'idle'}, ...state]
         },
-
-        changeTodolistTitle: (state, action: PayloadAction<{ id: string, title: string }>) => {
-            const todo = state.find(todo => todo.id === action.payload.id)
+        changeTodolistTitle: (state, action: PayloadAction<{ id: string; title: string }>) => {
+            const todo = state.find((todo) => todo.id === action.payload.id);
             if (todo) {
-                todo.title = action.payload.title
+                todo.title = action.payload.title;
             }
             // return state.map(tl => tl.id === action.payload.id ? {...tl, title: action.payload.title} : tl)
         },
-        changeTodolistFilter: (state, action: PayloadAction<{ id: string, filter: FilterValuesType }>) => {
+        changeTodolistFilter: (state, action: PayloadAction<{ id: string; filter: FilterValuesType }>) => {
+            const todo = state.find((todo) => todo.id === action.payload.id);
+            if (todo) {
+                todo.filter = action.payload.filter;
+            }
             // return state.map(tl => tl.id === action.payload.id ? {...tl, filter: action.payload.filter} : tl)
-            const todo = state.find(todo => todo.id === action.payload.id)
-            if (todo) {
-                todo.filter = action.payload.filter
-            }
         },
-        changeTodolistEntityStatus: (state, action: PayloadAction<{ id: string, entityStatus: RequestStatusType }>) => {
+        changeTodolistEntityStatus: (
+            state,
+            action: PayloadAction<{ id: string; entityStatus: RequestStatusType }>
+        ) => {
+            const todo = state.find((todo) => todo.id === action.payload.id);
+            if (todo) {
+                todo.entityStatus = action.payload.entityStatus;
+            }
             // return state.map(tl => tl.id === action.payload.id ? {...tl, entityStatus: action.payload.status} : tl)
-            const todo = state.find(todo => todo.id === action.payload.id)
-            if (todo) {
-                todo.entityStatus = action.payload.entityStatus
-            }
         },
-        // остается тут так как мы в tasks-reducer обращаемся к нему из extraReducers
         setTodolists: (state, action: PayloadAction<{ todolists: TodolistType[] }>) => {
-            // return [{...action.payload.todolist, filter: 'all', entityStatus: 'idle'}, ...state]
             return action.payload.todolists.map((tl) => {
-                return {...tl, filter: 'all', entityStatus: 'idle'}
-            })
+                return {...tl, filter: 'all', entityStatus: 'idle'};
+            });
+            // return [{...action.payload.todolist, filter: 'all', entityStatus: 'idle'}, ...state]
         },
     },
     extraReducers: (builder) => {
-
+        builder.addCase(clearTasksAndTodolists, (state) => {
+            return [];
+        });
     },
-})
+});
 
-// actions
 // назвнание что в сторе у нас todolistsReducer
 export const todolistsReducer = slice.reducer;
 export const todolistsActions = slice.actions

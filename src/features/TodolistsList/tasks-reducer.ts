@@ -5,6 +5,7 @@ import {appActions} from 'app/app-reducer'
 import {handleServerAppError, handleServerNetworkError} from 'utils/error-utils'
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {todolistsActions} from "features/TodolistsList/todolists-reducer";
+import {clearTasksAndTodolists} from "common/actions/common.actions";
 
 const initialState: TasksStateType = {}
 
@@ -13,68 +14,43 @@ const slice = createSlice({
     initialState,
     reducers: {
         removeTask: (state, action: PayloadAction<{ taskId: string, todolistId: string }>) => {
-            // todolistId
             const tasks = state[action.payload.todolistId]
             const index = tasks.findIndex(t => t.id === action.payload.taskId)
             if (index !== -1) tasks.splice(index, 1)
-            // return {
-            //     ...state,
-            //     [action.payload.todolistId]: state[action.payload.todolistId].filter(t => t.id != action.payload.taskId)
-            // }
-
         },
         addTask: (state, action: PayloadAction<{ task: TaskType }>) => {
             const tasks = state[action.payload.task.todoListId]
             tasks.unshift(action.payload.task)
-            // return {...state, [action.payload.task.todoListId]: [action.payload.task, ...state[action.payload.task.todoListId]]}
-
         },
         updateTask: (state, action: PayloadAction<{
             taskId: string,
             model: UpdateDomainTaskModelType,
             todolistId: string
         }>) => {
-            // нашел массив тасок
             const tasks = state[action.payload.todolistId]
-            // нашел конкретную таску
             const index = tasks.findIndex(t => t.id === action.payload.taskId)
             if (index !== -1) {
                 tasks[index] = {...tasks[index], ...action.payload.model}
             }
-            // return {
-            //     ...state, [action.payload.todolistId]: state[action.payload.todolistId]
-            //         .map(t => t.id === action.payload.taskId ? {...t, ...action.payload.model} : t)
-            // }
         },
         setTasks: (state, action: PayloadAction<{ tasks: Array<TaskType>, todolistId: string }>) => {
-            // заменили на таски что пришли с сервака
             state[action.payload.todolistId] = action.payload.tasks
-            // return {...state, [action.payload.todolistId]: action.payload.tasks}
 
         },
     },
-    // чтобы обратиться к АС другого редюсера(там хранятся в reducers) то используем extraReducers
     extraReducers: (builder) => {
         builder
-            // мы обращаемся к др редюсеру todolistsActions.addTodolist + пишем логику из своего редюсера по ADD-TODOLIST REMOVE-TODOLIST SET-TODOLISTS
             .addCase(todolistsActions.addTodolist, (state, action) => {
-                // в каждый тудулист добавляем пустой массив тасок
                 state[action?.payload?.todolist?.id] = []
-                // return {...state, [action.payload.todolist.id]: []}
             })
             .addCase(todolistsActions.removeTodolist, (state, action) => {
                 delete state[action.payload.id]
-                // const copyState = {...state}
-                // delete copyState[action.id]
-                // return copyState
             })
             .addCase(todolistsActions.setTodolists, (state, action) => {
                 action.payload.todolists.forEach(tl => state[tl.id] = [])
-                // const copyState = {...state}
-                // action.todolists.forEach(tl => {
-                //     copyState[tl.id] = []
-                // })
-                // return copyState
+            })
+            .addCase(clearTasksAndTodolists, () => {
+                return {}
             })
     },
 })
