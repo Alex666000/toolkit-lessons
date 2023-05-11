@@ -23,13 +23,13 @@ const slice = createSlice({
             // }
 
         },
-        addTaskAC: (state, action: PayloadAction<{ task: TaskType }>) => {
+        addTask: (state, action: PayloadAction<{ task: TaskType }>) => {
             const tasks = state[action.payload.task.todoListId]
             tasks.unshift(action.payload.task)
             // return {...state, [action.payload.task.todoListId]: [action.payload.task, ...state[action.payload.task.todoListId]]}
 
         },
-        updateTaskAC: (state, action: PayloadAction<{
+        updateTask: (state, action: PayloadAction<{
             taskId: string,
             model: UpdateDomainTaskModelType,
             todolistId: string
@@ -46,7 +46,7 @@ const slice = createSlice({
             //         .map(t => t.id === action.payload.taskId ? {...t, ...action.payload.model} : t)
             // }
         },
-        setTasksAC: (state, action: PayloadAction<{ tasks: Array<TaskType>, todolistId: string }>) => {
+        setTasks: (state, action: PayloadAction<{ tasks: Array<TaskType>, todolistId: string }>) => {
             // заменили на таски что пришли с сервака
             state[action.payload.todolistId] = action.payload.tasks
             // return {...state, [action.payload.todolistId]: action.payload.tasks}
@@ -59,7 +59,7 @@ const slice = createSlice({
             // мы обращаемся к др редюсеру todolistsActions.addTodolist + пишем логику из своего редюсера по ADD-TODOLIST REMOVE-TODOLIST SET-TODOLISTS
             .addCase(todolistsActions.addTodolist, (state, action) => {
                 // в каждый тудулист добавляем пустой массив тасок
-                state[action.payload.todolist.id] = [];
+                state[action?.payload?.todolist?.id] = []
                 // return {...state, [action.payload.todolist.id]: []}
             })
             .addCase(todolistsActions.removeTodolist, (state, action) => {
@@ -78,20 +78,25 @@ const slice = createSlice({
             })
     },
 })
+
+// export
+export const tasksReducer = slice.reducer
+export const tasksActions = slice.actions
+
 // thunks
 export const fetchTasksTC = (todolistId: string) => (dispatch: Dispatch) => {
     dispatch(appActions.setAppStatus({status: 'loading'}))
     todolistsAPI.getTasks(todolistId)
         .then((res) => {
             const tasks = res.data.items
-            dispatch(setTasksAC(tasks, todolistId))
+            dispatch(tasksActions.setTasks({tasks, todolistId}))
             dispatch(appActions.setAppStatus({status: 'succeeded'}))
         })
 }
 export const removeTaskTC = (taskId: string, todolistId: string) => (dispatch: Dispatch) => {
     todolistsAPI.deleteTask(todolistId, taskId)
         .then(res => {
-            const action = removeTaskAC(taskId, todolistId)
+            const action = tasksActions.removeTask({taskId, todolistId})
             dispatch(action)
         })
 }
@@ -101,8 +106,7 @@ export const addTaskTC = (title: string, todolistId: string) => (dispatch: Dispa
         .then(res => {
             if (res.data.resultCode === 0) {
                 const task = res.data.data.item
-                const action = addTaskAC(task)
-                dispatch(action)
+                dispatch(tasksActions.addTask({task}))
                 dispatch(appActions.setAppStatus({status: 'succeeded'}))
             } else {
                 handleServerAppError(res.data, dispatch);
@@ -135,7 +139,7 @@ export const updateTaskTC = (taskId: string, domainModel: UpdateDomainTaskModelT
         todolistsAPI.updateTask(todolistId, taskId, apiModel)
             .then(res => {
                 if (res.data.resultCode === 0) {
-                    const action = updateTaskAC(taskId, domainModel, todolistId)
+                    const action = tasksActions.updateTask({taskId, model: domainModel, todolistId})
                     dispatch(action)
                 } else {
                     handleServerAppError(res.data, dispatch);
