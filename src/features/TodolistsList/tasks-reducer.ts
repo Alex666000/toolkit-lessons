@@ -53,7 +53,7 @@ const slice = createSlice({
 
         },
     },
-    // если нужен АС из др редюсера то используем extraReducers
+    // чтобы обратиться к АС другого редюсера(там хранятся в reducers) то используем extraReducers
     extraReducers: (builder) => {
         builder
             // мы обращаемся к др редюсеру todolistsActions.addTodolist + пишем логику из своего редюсера по ADD-TODOLIST REMOVE-TODOLIST SET-TODOLISTS
