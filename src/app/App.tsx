@@ -22,7 +22,7 @@ function App({demo = false}: PropsType) {
 	const isInitialized = useSelector(selectIsInitialized)
 	const isLoggedIn = useSelector(selectIsLoggedIn)
 	const dispatch = useAppDispatch()
-
+//
 	useEffect(() => {
 		dispatch(initializeAppTC())
 	}, [])
